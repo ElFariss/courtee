@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.courtee.controller.NavigationController;
 import com.courtee.model.Booking;
+import com.courtee.service.BookingService;
 import com.courtee.service.PaymentService;
 
 import javafx.animation.KeyFrame;
@@ -30,6 +31,7 @@ public class QRISPaymentView extends BorderPane {
    private NavigationController navigationController;
    private List<Booking> bookings;
    private PaymentService paymentService;
+   private BookingService bookingService;
    private int timeLeft = 3600; // 60 minutes
    private Label timerLabel;
    private boolean guideOpen = true;
@@ -38,6 +40,7 @@ public class QRISPaymentView extends BorderPane {
       this.navigationController = navigationController;
       this.bookings = bookings;
       this.paymentService = new PaymentService();
+      this.bookingService = new BookingService();
       initUI();
       startTimer();
    }
@@ -188,13 +191,25 @@ public class QRISPaymentView extends BorderPane {
    }
 
    private void handleConfirmPayment() {
-      Alert alert = new Alert(Alert.AlertType.INFORMATION);
-      alert.setTitle("Pembayaran Berhasil");
-      alert.setHeaderText("Order anda berhasil diproses!");
-      alert.setContentText("Anda akan diarahkan ke home. Anda dapat mengakses dashboard untuk mengecek pesanan.");
+      // Confirm bookings and mark time slots as unavailable
+      boolean success = bookingService.confirmBookings(bookings);
 
-      alert.showAndWait();
-      navigationController.showHome();
+      if (success) {
+         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+         alert.setTitle("Pembayaran Berhasil");
+         alert.setHeaderText("Order anda berhasil diproses!");
+         alert.setContentText("Anda akan diarahkan ke home. Anda dapat mengakses dashboard untuk mengecek pesanan.");
+
+         alert.showAndWait();
+         navigationController.showHome();
+      } else {
+         Alert alert = new Alert(Alert.AlertType.ERROR);
+         alert.setTitle("Pembayaran Gagal");
+         alert.setHeaderText("Terjadi kesalahan!");
+         alert.setContentText("Gagal memproses pembayaran. Silakan coba lagi.");
+
+         alert.showAndWait();
+      }
    }
 
    private void showLeaveConfirmation() {

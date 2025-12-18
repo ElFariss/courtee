@@ -1,29 +1,29 @@
 #!/bin/bash
 
-# Courtee Java Build Script (without Maven)
+# Courtee Java Build Script (Maven-based)
 
 echo "================================"
 echo "Courtee Java Build Script"
 echo "================================"
 
-# Create output directories
-mkdir -p build/classes
-mkdir -p build/test-classes
+# Check if Maven is installed
+if ! command -v mvn &> /dev/null; then
+    echo "✗ Maven is not installed. Please install Maven first."
+    exit 1
+fi
 
-# Compile main source files
-echo "Compiling main source files..."
-find src/main/java -name "*.java" > sources.txt
+# Clean and compile with Maven
+echo "Cleaning previous build..."
+mvn clean
 
-if [ -s sources.txt ]; then
-    javac -d build/classes @sources.txt
-    if [ $? -eq 0 ]; then
-        echo "✓ Main source compiled successfully"
-    else
-        echo "✗ Main source compilation failed"
-        exit 1
-    fi
+echo ""
+echo "Compiling source files with Maven..."
+mvn compile
+
+if [ $? -eq 0 ]; then
+    echo "✓ Compilation successful"
 else
-    echo "✗ No source files found"
+    echo "✗ Compilation failed"
     exit 1
 fi
 
@@ -32,11 +32,8 @@ echo "================================"
 echo "Build completed successfully!"
 echo "================================"
 echo ""
-echo "Note: To run tests, you need JUnit 5 dependencies."
-echo "Please use Maven (mvn test) or download JUnit jars manually."
+echo "To run tests:"
+echo "  mvn test"
 echo ""
-echo "To run the application (requires JavaFX):"
-echo "  java --module-path /path/to/javafx-sdk/lib --add-modules javafx.controls,javafx.fxml -cp build/classes com.courtee.CourteeApp"
-
-# Clean up
-rm sources.txt
+echo "To run the application:"
+echo "  mvn javafx:run"

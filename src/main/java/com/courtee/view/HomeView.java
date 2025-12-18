@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.courtee.controller.NavigationController;
 import com.courtee.model.Venue;
-import com.courtee.utils.DataRepository;
+import com.courtee.service.VenueService;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -33,10 +33,12 @@ public class HomeView extends BorderPane {
    private GridPane venueGrid;
    private TextField areaField;
    private ComboBox<String> sportTypeCombo;
+   private VenueService venueService;
 
    public HomeView(NavigationController navigationController) {
       this.navigationController = navigationController;
-      this.allVenues = DataRepository.getVenues();
+      this.venueService = new VenueService();
+      this.allVenues = venueService.getAllVenues();
       initUI();
    }
 
@@ -230,7 +232,13 @@ public class HomeView extends BorderPane {
       // Load and display the image
       ImageView imageView;
       try {
-         Image image = new Image(getClass().getResourceAsStream("/" + venue.getImage()));
+         Image image;
+         // Try to load from BLOB data first, fallback to resource files
+         if (venue.getImageData() != null && venue.getImageData().length > 0) {
+            image = new Image(new java.io.ByteArrayInputStream(venue.getImageData()));
+         } else {
+            image = new Image(getClass().getResourceAsStream("/" + venue.getImage()));
+         }
          imageView = new ImageView(image);
          imageView.setFitWidth(250);
          imageView.setFitHeight(150);

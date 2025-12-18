@@ -8,7 +8,9 @@ import java.util.Map;
 import com.courtee.controller.NavigationController;
 import com.courtee.model.Court;
 import com.courtee.model.TimeSlot;
-import com.courtee.utils.DataRepository;
+import com.courtee.model.Venue;
+import com.courtee.service.VenueService;
+import com.courtee.service.BookingService;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -26,14 +28,30 @@ import javafx.scene.text.FontWeight;
 
 public class VenueDetailView extends BorderPane {
 
-   private NavigationController navigationController;
-   private String venueId;
-   private Map<String, List<TimeSlot>> selectedSlots = new HashMap<>();
+   private final NavigationController navigationController;
+   private final String venueId;
+   private final Map<String, List<TimeSlot>> selectedSlots = new HashMap<>();
+   private final Map<String, String> courtIdToName = new HashMap<>(); // Maps court ID to court name
    private Button checkoutButton;
+   private final VenueService venueService;
+   private final BookingService bookingService;
+   private Venue currentVenue;
+   private String selectedDate = "20 Desember 2025"; // Default date
 
    public VenueDetailView(NavigationController navigationController, String venueId) {
       this.navigationController = navigationController;
       this.venueId = venueId;
+      this.venueService = new VenueService();
+      this.bookingService = new BookingService();
+
+      // Load venue data
+      this.currentVenue = venueService.getVenueById(venueId);
+      if (this.currentVenue == null) {
+         System.err.println("Warning: Venue not found for ID: " + venueId);
+         // Create a default venue to prevent null pointer exceptions
+         this.currentVenue = new com.courtee.model.Venue(venueId, "Unknown Venue", "Unknown", "Unknown", 0, "");
+      }
+
       initUI();
    }
 
@@ -75,10 +93,10 @@ public class VenueDetailView extends BorderPane {
       VBox content = new VBox(20);
       content.setPadding(new Insets(30));
 
-      Label venueName = new Label("Longfield Sport Center");
+      Label venueName = new Label(currentVenue.getName());
       venueName.setFont(Font.font("System", FontWeight.BOLD, 32));
 
-      Label location = new Label("Jakarta Pusat");
+      Label location = new Label(currentVenue.getLocation());
       location.setTextFill(Color.web("#6B7280"));
       location.setFont(Font.font("System", 14));
 
@@ -87,12 +105,18 @@ public class VenueDetailView extends BorderPane {
       dateCombo.setValue("20 Desember 2025");
       dateCombo.setMaxWidth(250);
       dateCombo.setStyle("-fx-padding: 10; -fx-background-radius: 8;");
+      dateCombo.setOnAction(e -> {
+         selectedDate = dateCombo.getValue();
+         // Refresh court cards to update slot availability for the new date
+         refreshCourts();
+      });
 
       Label courtsTitle = new Label("Lapangan yang Tersedia");
       courtsTitle.setFont(Font.font("System", FontWeight.BOLD, 20));
 
       VBox courtsSection = new VBox(15);
-      List<Court> courts = DataRepository.getCourtsForVenue(venueId);
+      courtsSection.setId("courtsSection"); // Add ID for easy access
+      List<Court> courts = venueService.getCourtsForVenue(venueId);
 
       for (Court court : courts) {
          VBox courtCard = createCourtCard(court);
@@ -139,6 +163,7 @@ public class VenueDetailView extends BorderPane {
       timeSlots.setVgap(8);
 
       selectedSlots.put(court.getId(), new ArrayList<>());
+      courtIdToName.put(court.getId(), court.getName()); // Store court name mapping
 
       for (TimeSlot slot : court.getTimeSlots()) {
          HBox timeSlotBox = createTimeSlotButton(court.getId(), slot);
@@ -156,19 +181,24 @@ public class VenueDetailView extends BorderPane {
       HBox slotBox = new HBox();
       slotBox.setStyle("-fx-border-color: #EAECF0; -fx-border-radius: 8; -fx-background-radius: 8;");
 
+      // Check date-specific availability
+      boolean isAvailableForSelectedDate = bookingService.isSlotAvailable(courtId, slot.getTime(), selectedDate);
+
       Label timeLabel = new Label(slot.getTime());
-      timeLabel.setStyle("-fx-padding: 8 12; -fx-background-color: " + (slot.isAvailable() ? "#9957B3" : "#D1D5DB")
-            + "; -fx-text-fill: white; -fx-background-radius: 8 0 0 8;");
+      timeLabel
+            .setStyle("-fx-padding: 8 12; -fx-background-color: " + (isAvailableForSelectedDate ? "#9957B3" : "#D1D5DB")
+                  + "; -fx-text-fill: white; -fx-background-radius: 8 0 0 8;");
       timeLabel.setFont(Font.font("System", FontWeight.BOLD, 11));
 
       Label priceLabel = new Label(slot.getFormattedPrice());
-      priceLabel.setStyle("-fx-padding: 8 12; -fx-background-color: " + (slot.isAvailable() ? "#9957B3" : "#D1D5DB")
-            + "; -fx-text-fill: white; -fx-background-radius: 0 8 8 0;");
+      priceLabel
+            .setStyle("-fx-padding: 8 12; -fx-background-color: " + (isAvailableForSelectedDate ? "#9957B3" : "#D1D5DB")
+                  + "; -fx-text-fill: white; -fx-background-radius: 0 8 8 0;");
       priceLabel.setFont(Font.font("System", 11));
 
       slotBox.getChildren().addAll(timeLabel, priceLabel);
 
-      if (slot.isAvailable()) {
+      if (isAvailableForSelectedDate) {
          slotBox.setCursor(javafx.scene.Cursor.HAND);
          slotBox.setOnMouseClicked(e -> {
             List<TimeSlot> courtSlots = selectedSlots.get(courtId);
@@ -215,16 +245,56 @@ public class VenueDetailView extends BorderPane {
 
       for (Map.Entry<String, List<TimeSlot>> entry : selectedSlots.entrySet()) {
          String courtId = entry.getKey();
+         String courtName = courtIdToName.get(courtId); // Get the actual court name
+
          for (TimeSlot slot : entry.getValue()) {
             bookings.add(new com.courtee.model.Booking(
-                  "Longfield Sport Center",
-                  courtId,
-                  "20 Desember 2025",
+                  currentVenue.getName(),
+                  courtName, // Use court name instead of ID
+                  courtId, // Pass court ID for tracking
+                  selectedDate,
                   slot.getTime(),
                   slot.getPrice()));
          }
       }
 
       return bookings;
+   }
+
+   /**
+    * Refresh court cards to update slot availability for the selected date
+    */
+   private void refreshCourts() {
+      // Clear selected slots when changing dates
+      for (List<TimeSlot> slots : selectedSlots.values()) {
+         slots.clear();
+      }
+      updateCheckoutButton();
+
+      // Find the courts section and recreate all court cards
+      ScrollPane scrollPane = (ScrollPane) getCenter();
+      VBox content = (VBox) scrollPane.getContent();
+
+      // Find the courts section VBox (it's after the date combo)
+      VBox courtsSection = null;
+      for (int i = 0; i < content.getChildren().size(); i++) {
+         if (content.getChildren().get(i) instanceof VBox) {
+            VBox vbox = (VBox) content.getChildren().get(i);
+            if ("courtsSection".equals(vbox.getId())) {
+               courtsSection = vbox;
+               break;
+            }
+         }
+      }
+
+      if (courtsSection != null) {
+         courtsSection.getChildren().clear();
+         List<Court> courts = venueService.getCourtsForVenue(venueId);
+
+         for (Court court : courts) {
+            VBox courtCard = createCourtCard(court);
+            courtsSection.getChildren().add(courtCard);
+         }
+      }
    }
 }

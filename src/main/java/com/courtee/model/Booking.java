@@ -1,61 +1,88 @@
 package com.courtee.model;
 
 public class Booking {
-    private String venueName;
-    private String courtName;
-    private String date;
-    private String time;
-    private double price;
+   private int id; // Database ID
+   private String venueName;
+   private String courtName;
+   private String courtId; // Court ID for tracking time slot availability
+   private String date;
+   private String time;
+   private double price;
 
-    public Booking(String venueName, String courtName, String date, String time, double price) {
-        this.venueName = venueName;
-        this.courtName = courtName;
-        this.date = date;
-        this.time = time;
-        this.price = price;
-    }
+   public Booking(String venueName, String courtName, String date, String time, double price) {
+      this.venueName = venueName;
+      this.courtName = courtName;
+      this.date = date;
+      this.time = time;
+      this.price = price;
+   }
 
-    public String getVenueName() {
-        return venueName;
-    }
+   public Booking(String venueName, String courtName, String courtId, String date, String time, double price) {
+      this.venueName = venueName;
+      this.courtName = courtName;
+      this.courtId = courtId;
+      this.date = date;
+      this.time = time;
+      this.price = price;
+   }
 
-    public void setVenueName(String venueName) {
-        this.venueName = venueName;
-    }
+   public int getId() {
+      return id;
+   }
 
-    public String getCourtName() {
-        return courtName;
-    }
+   public void setId(int id) {
+      this.id = id;
+   }
 
-    public void setCourtName(String courtName) {
-        this.courtName = courtName;
-    }
+   public String getVenueName() {
+      return venueName;
+   }
 
-    public String getDate() {
-        return date;
-    }
+   public void setVenueName(String venueName) {
+      this.venueName = venueName;
+   }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
+   public String getCourtName() {
+      return courtName;
+   }
 
-    public String getTime() {
-        return time;
-    }
+   public void setCourtName(String courtName) {
+      this.courtName = courtName;
+   }
 
-    public void setTime(String time) {
-        this.time = time;
-    }
+   public String getCourtId() {
+      return courtId;
+   }
 
-    public double getPrice() {
-        return price;
-    }
+   public void setCourtId(String courtId) {
+      this.courtId = courtId;
+   }
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
+   public String getDate() {
+      return date;
+   }
 
-    public String getFormattedPrice() {
-        return String.format("Rp %.2f", price);
-    }
+   public void setDate(String date) {
+      this.date = date;
+   }
+
+   public String getTime() {
+      return time;
+   }
+
+   public void setTime(String time) {
+      this.time = time;
+   }
+
+   public double getPrice() {
+      return price;
+   }
+
+   public void setPrice(double price) {
+      this.price = price;
+   }
+
+   public String getFormattedPrice() {
+      return String.format("Rp %.2f", price);
+   }
 }
