@@ -56,3 +56,11 @@ dist/
 
 # Development history and documentation
 dev_history/
+
+
+verify-blob-stmt-fix.sh
+verify-blob-migration.sh
+verify-blob-migration-v2.sh
+	
+sources.txt
+VERIFICATION_REPORT.txt
