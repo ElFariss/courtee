@@ -332,7 +332,7 @@ The application implements intelligent date-specific booking:
 
 ## Quick Start Guide
 
-### 🚀 Getting Started
+### Getting Started
 ```bash
 # 1. Reset database (optional, for fresh start)
 chmod +x reset-database.sh
