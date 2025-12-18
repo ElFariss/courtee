@@ -64,3 +64,5 @@ verify-blob-migration-v2.sh
 	
 sources.txt
 VERIFICATION_REPORT.txt
+
+original/
