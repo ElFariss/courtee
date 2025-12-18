@@ -92,19 +92,19 @@ java-implementation/
 
 ## Key Features
 
-### 🎯 Date-Specific Booking System
+### Date-Specific Booking System
 - **Per-Date Availability**: Time slots are checked for availability on a per-date basis
 - **Independent Dates**: Booking a slot on one date does not block it for other dates
 - **Dynamic Refresh**: Slot availability updates automatically when changing dates
 - **Smart Filtering**: System queries bookings table to determine date-specific availability
 
-### 📸 BLOB Image Storage
+### BLOB Image Storage
 - **No Hardcoded References**: All images loaded from database
 - **Auto-Initialization**: Images converted from resources to BLOB on first run
 - **Optimal Performance**: Images cached in memory for fast access
 - **Scalable**: Easy to add/update images through database
 
-### ✅ Integrated Booking System
+### Integrated Booking System
 - **Complete Booking Flow**: Venue selection → Time slot selection → Checkout → Payment → Confirmation
 - **Date-Aware Management**: Slot status tracked per date, not globally
 - **Persistent Storage**: All bookings saved to SQLite database
@@ -332,7 +332,7 @@ The application implements intelligent date-specific booking:
 
 ## Quick Start Guide
 
-### 🚀 Getting Started
+### Getting Started
 ```bash
 # 1. Reset database (optional, for fresh start)
 chmod +x reset-database.sh
@@ -348,23 +348,23 @@ mvn javafx:run
 mvn test
 ```
 
-### 📝 Testing Date-Specific Booking
+### Testing Date-Specific Booking
 1. Select a venue from home page
 2. Note the selected date (e.g., "20 Desember 2025")
 3. Click available time slots (they turn green)
 4. Click "Lanjutkan ke Pembayaran" (Continue to Payment)
 5. Select payment method (QRIS/Mobile Banking)
 6. Click "Konfirmasi" (Confirm)
-7. ✅ See success message
+7. See success message
 8. Return to the same venue with the same date
-9. ✅ Verify the booked slots are now gray (unavailable)
+9. Verify the booked slots are now gray (unavailable)
 10. **Change the date to "21 Desember 2025"**
-11. ✅ **Verify the same time slots are available again** (purple)
+11. **Verify the same time slots are available again** (purple)
 12. Book a slot for the new date
 13. Switch back to "20 Desember 2025"
-14. ✅ Verify original bookings still show as unavailable
+14. Verify original bookings still show as unavailable
 
-### 🔍 Database Verification
+### Database Verification
 ```bash
 sqlite3 courtee.db
 
